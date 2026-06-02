@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  MAHASISWA
+  KETUA_KELAS
+  DOSEN
+}
+
+model User {
+
+  id          String   @id @default(cuid())
+
+  name        String
+
+  email       String   @unique
+
+  password    String
+
+  role        Role
+
+  createdAt   DateTime @default(now())
+
+  pengumuman  Pengumuman[]
+}
+
+model Jadwal {
+
+  id        String   @id @default(cuid())
+
+  matkul    String
+
+  hari      String
+
+  jam       String
+
+  ruangan   String
+
+  dosen     String
+
+  createdAt DateTime @default(now())
+}
+
+model Tugas {
+  id          String   @id @default(cuid())
+  judul       String
+  deskripsi   String   @db.Text
+  deadline    DateTime
+
+  createdAt   DateTime @default(now())
+}
+
+model Pengumuman {
+
+  id        String   @id @default(cuid())
+
+  judul     String
+
+  isi       String
+
+  createdAt DateTime @default(now())
+
+  authorId  String
+
+  author    User @relation(fields: [authorId], references: [id])
+}
