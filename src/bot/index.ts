@@ -1,12 +1,9 @@
 import { Telegraf } from "telegraf";
-
 import { prisma } from "../lib/prisma";
 
 const bot = new Telegraf(
   process.env.TELEGRAM_BOT_TOKEN!
 );
-
-
 
 // =========================
 // START
@@ -31,8 +28,6 @@ Perintah yang tersedia:
 /jadwal jumat`
   );
 });
-
-
 
 // =========================
 // PENGUMUMAN TERBARU
@@ -65,8 +60,6 @@ ${data.isi}`
     );
   }
 );
-
-
 
 // =========================
 // SEMUA PENGUMUMAN
@@ -108,10 +101,8 @@ bot.command(
   }
 );
 
-
-
 // =========================
-// SEMUA JADWAL
+// JADWAL
 // =========================
 
 bot.command(
@@ -124,22 +115,30 @@ bot.command(
     const parts =
       text.split(" ");
 
+    // /jadwal senin
     if (parts.length > 1) {
 
       const hari =
-        parts[1];
+        parts.slice(1).join(" ");
+
+      const semuaJadwal =
+        await prisma.jadwal.findMany();
 
       const jadwal =
-        await prisma.jadwal.findMany({
+        semuaJadwal.filter(
 
-          where: {
+          (item) =>
 
-            hari: {
-              equals: hari,
-              mode: "insensitive",
-            },
-          },
-        });
+            item.hari
+              .toLowerCase()
+              .trim()
+
+            ===
+
+            hari
+              .toLowerCase()
+              .trim()
+        );
 
       if (!jadwal.length) {
 
@@ -154,9 +153,9 @@ bot.command(
           (item) =>
 
 `${item.matkul}
-${item.jam}
-${item.ruangan}
-${item.dosen}`
+🕒 ${item.jam}
+📍 ${item.ruangan}
+👨‍🏫 ${item.dosen}`
         )
         .join("\n\n");
 
@@ -165,10 +164,14 @@ ${item.dosen}`
       );
     }
 
-
-
+    // /jadwal
     const jadwal =
-      await prisma.jadwal.findMany();
+      await prisma.jadwal.findMany({
+
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
 
     if (!jadwal.length) {
 
@@ -183,8 +186,8 @@ ${item.dosen}`
         (item) =>
 
 `${item.matkul}
-${item.hari}
-${item.jam}`
+📅 ${item.hari}
+🕒 ${item.jam}`
       )
       .join("\n\n");
 
@@ -194,7 +197,9 @@ ${item.jam}`
   }
 );
 
-
+// =========================
+// BOT START
+// =========================
 
 bot.launch({
   dropPendingUpdates: true,
